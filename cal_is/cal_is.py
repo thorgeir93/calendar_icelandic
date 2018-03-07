@@ -9,9 +9,9 @@
 # TODO print out three months in the same row.
 #
 import argparse
+import datetime
 import calendar
 from workalendar.europe import Iceland
-from datetime import datetime
 
 cal = calendar.LocaleTextCalendar(firstweekday=6, locale='is_IS')
 
@@ -58,6 +58,10 @@ def month(the_year, the_month, display_year=True):
             
             elif day.weekday() == 6:
                 the_day = colorize(the_day, "\033[96m")
+
+            # Make the today number blik for good visability
+            if day == datetime.date.today():
+                the_day = colorize(the_day, "\033[6m")
                
             weekdays += the_day+" "
         print( weekdays )
@@ -77,22 +81,18 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--month',
                         type=int,
                         dest='month', 
-                        default=datetime.today().month,
+                        default=datetime.date.today().month,
                         help='Which month to choose from, one of 1 to 12. The default value is the number of the current month.')
     
     parser.add_argument('-y', '--year',
                         type=int,
                         dest='year', 
-                        default=datetime.today().year,
+                        default=datetime.date.today().year,
                         help='Which year to choose from, 0 to 9999. The default value is the current year.')
     
     args = parser.parse_args()
 
     month( args.year, args.month )
-
-    #print( args.cl_args )
-    
-    #print( args.cl_args.month )
 
     #_print_out_possible_colors()
     #month( 2018, 4 )
