@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # Author: thorgeir <thorgeirsigurd@gmail.com>
 #
 # Requirements:
@@ -18,10 +20,6 @@ def colorize(target_string, color):
 
 def month(the_year, the_month, display_year=True):
     holidays = [h[0] for h in Iceland().holidays( the_year )]
-
-    #header_row = ""
-    #weekday_names_row = ""
-    #monthdays_row = [] 
 
     #
     # The Header
