@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Author: thorgeir <thorgeirsigurd@gmail.com>
 #
@@ -9,6 +10,7 @@
 # TODO print out three months in the same row.
 #
 from __future__ import print_function
+import sys
 import argparse
 import datetime
 import calendar
@@ -16,7 +18,7 @@ from workalendar.europe import Iceland
 
 __author__ = "thorgeir <thorgeirsigurd@gmail.com>"
 
-cal = calendar.LocaleTextCalendar(firstweekday=6, locale='is_IS')
+cal = calendar.LocaleTextCalendar(firstweekday=calendar.SUNDAY, locale='is_IS')
 
 #grid = [
 #    (x, ),
@@ -81,76 +83,97 @@ class OtherMonthDay(Day):
 def colorize(target_string, color):
     return "%s%s%s" % (color, target_string, "\033[0m")
 
-#def month(the_year, the_month, display_year=True):
-#    # Extract only the holyday dates, not the name of the holiday.
-#    holidays = [h[0] for h in Iceland().holidays( the_year )]
+#class CalendarIS(calendar.LocaleTextCalendar):
+#    def __init__(self):
+#        super().__init__(firstweekday=calendar.SUNDAY, locale='is_IS')
 #
-#    #
-#    # The Header
-#    #
-#    print( "" )
-#    #print( "     ", end="" )
-#    month_title = cal.formatmonthname(the_year, the_month, 1, withyear=False) 
-#    if display_year:
-#        print(colorize( month_title.title()+'(%s)' % the_year, "\033[4m"))
-#    else:
-#        print(colorize( month_title.title(), "\033[4m"))
-#    print( cal.formatweekheader(2) )
-#    print( '-' * 20 )
-#
-#    month_weeks = []
-#
-#    # The calendar itself.
-#    for week_num, week in enumerate(cal.monthdatescalendar(the_year,the_month)):
-#        week_list = []
-#        weekdays = ''
-#        for weekday, day in enumerate(week):
-#            day_number = int(day.day)
-#            the_day = str(day.day)
-#            
-#            if len(the_day) == 1:
-#                the_day = " "+the_day
-#           
-#            # Make the the last days from last month be
-#            # less readable than main days in the month. 
-#            if week_num == 0 and day.day > 8:
-#                day = OtherMonthDay( day_number )
-#                the_day = colorize(the_day, "\033[93m")
-#            
-#            # Make the days from the next month be less 
-#            # readable than main days in the month. 
-#            elif week_num > 3 and day.day < 8:
-#                day = OtherMonthDay( day_number )
-#                the_day = colorize(the_day, "\033[93m")
-#                
-#            elif day in holidays:
-#                day = Holiday(day_number)
-#                the_day = colorize(the_day, "\033[46m")
-#            
-#            elif day.weekday() == 6:
-#                day = Sunday(day_number)
-#                the_day = colorize(the_day, "\033[96m")
-#
-#            # Make the today number blik for good visability
-#            if day == datetime.date.today():
-#                day = CurrentDay(day_number)
-#                the_day = colorize(the_day, "\033[6m")
-#              
-#            week_list.append( day )
-#            weekdays += the_day+" "
-#        month_weeks.append( week_list )
-#        print( weekdays )
-#
-#    return month_weeks
+
+class Month():
+    """ 
+    """
+    def __init__(self, year, month):
+        self.year = year
+        self.month = month
+
+        self.cal = calendar.LocaleTextCalendar(firstweekday=calendar.SUNDAY, locale='is_IS')
+
+        self.weekheader_chars_width = 2
+
+    def title(self):
+        title = self.cal.formatmonthname(self.year, self.month, 1, withyear=False)
+        title = title.title()
+        return title
+
+    def weekheader(self):
+        """ Return string such as:
+                "su má þr mi fi fö la"
+        """
+        return self.cal.formatweekheader(self.weekheader_chars_width)
+
+    def weekheader_list(self):
+        return self.weekheader().split(" ")
+
+    def weeks(self):
+        """ Return list of list.
+            Each list in the main list represent a week.
+            Each element base class is `Day`.
+        """
+        weeks = []
+
+        # Extract only the holyday dates, not the name of the holiday.
+        holidays = [h[0] for h in Iceland().holidays(self.year)]
+
+        for week_row, week in enumerate(cal.monthdatescalendar(self.year,self.month)):
+
+            days = []
+
+            for weekday, day in enumerate(week):
+                day_number = int(day.day)
+                
+                # Make the the last days from last month be
+                # less readable than main days in the month. 
+                if week_row == 0 and day.day > 8:
+                    day = OtherMonthDay( day_number )
+                
+                # Make the days from the next month be less 
+                # readable than main days in the month. 
+                elif week_row > 3 and day.day < 8:
+                    day = OtherMonthDay( day_number )
+                    
+                elif day in holidays:
+                    day = Holiday(day_number)
+                
+                elif day.weekday() == calendar.SUNDAY:
+                    day = Sunday(day_number)
+
+                # Make the today number blik for good visability
+                if day == datetime.date.today():
+                    day = CurrentDay(day_number)
+
+                if isinstance(day, datetime.date):
+                    day = Day(day_number)
+                  
+                days.append(day)
+
+            weeks.append(days)
+
+        return weeks
+
+    def days(self):
+        """ Flaten out the output from `weeks` command.
+        """
+        pass 
+        
+        
 
 def month(the_year, the_month, display_year=True):
     # Extract only the holyday dates, not the name of the holiday.
-    holidays = [h[0] for h in Iceland().holidays( the_year )]
+    holidays = [h[0] for h in Iceland().holidays(the_year)]
 
     #
     # The Header
     #
-    print( "" )
+    print("")
     #print( "     ", end="" )
     month_title = cal.formatmonthname(the_year, the_month, 1, withyear=False) 
     if display_year:
@@ -198,9 +221,29 @@ def month(the_year, the_month, display_year=True):
 
     return month_weeks
 
-def hole_year(the_year):
-    for i in range(1, 13):
-        month(the_year, i) 
+
+def row_test(year):
+    months = []
+    for m in range(1, 4):
+        months.append(month(year, m))
+
+    print("ha")
+    #for s in zip(months[0], months[1], months[2]):
+    #    print(s)
+
+    for s in months:
+        for week in s:
+            for day in week:
+                print( day.output()+" ", end='')
+            print('')
+    #print(months)
+
+def hole_year(year):
+    for m in range(1, 13):
+        for week in month(year, m):
+            for day in week:
+                print( day.output()+" ", end='')
+            print('')
 
 def _print_out_possible_colors():
     for i in range(1,257):
@@ -228,6 +271,15 @@ if __name__ == "__main__":
     )
     
     args = parser.parse_args()
+
+    #row_test(2021)
+    for week in Month(args.year, args.month).weeks():
+        for day in week:
+            print( day.output()+" ", end='')
+        print('')
+        
+
+    sys.exit(0)
 
     one_month = month(args.year, args.month)
 
