@@ -143,9 +143,19 @@ def colorize(target_string, color):
 #
 #    return month_weeks
 
-def month(the_year, the_month, display_year=True):
+def month(the_year, the_month, display_year=True, notes=None):
+    """
+    :param notes: Config about which dates contains notes.
+        Where key is the date itself, value is list where the first element
+        is the type of the note and the second element is the notes itself.
+         {"2022-03-27": ["note", "Foobar!"]}
+    :type notes: Dict.
+    """
     # Extract only the holyday dates, not the name of the holiday.
     holidays = [h[0] for h in Iceland().holidays( the_year )]
+
+    if notes is None:
+        notes = {}
 
     #
     # The Header
@@ -167,6 +177,11 @@ def month(the_year, the_month, display_year=True):
         week_list = []
         weekdays = ''
         for weekday, day in enumerate(week):
+            if str(day) in notes.keys():
+                note_type, note_text = notes[str(day)]
+                print(note_type)
+                print(note_text)
+
             day_number = int(day.day)
             
             # Make the the last days from last month be
@@ -207,6 +222,7 @@ def _print_out_possible_colors():
         i=str(i)
         print( i, '\033['+i+'m', "Test the color", i, '\033[0m')
 
+#def save_note():
 
 if __name__ == "__main__":
     #_print_out_possible_colors()
@@ -226,17 +242,39 @@ if __name__ == "__main__":
         default=datetime.date.today().year,
         help='Which year to choose from, 0 to 9999. The default value is the current year.'
     )
+
+    parser.add_argument('-a', '--add',
+        type=str,
+        default=None,
+        help='Add a note to a specificed day.'
+    )
     
+    #parser.add_argument('-t', '--type',
+    #    type=,
+    #    default=None,
+    #    help='Add a note to '
+    #)
     args = parser.parse_args()
 
-    one_month = month(args.year, args.month)
+    notes = None
+    if args.add:
+        print("What is your note?")
+        note = raw_input()
+
+        notes = {
+            args.add: ["note", note]
+        }
+
+    #save_note(notes)
+
+    one_month = month(args.year, args.month, notes=notes)
 
     for week in one_month:
         for day in week:
             #print( day )
             #print(dir(day))
             #try:
-            print( day.output()+" ", end='')
+            print(day.output()+" ", end='')
             #except:
             #    print( str(day.day)+" ", end='')
             #    pass
