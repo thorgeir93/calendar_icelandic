@@ -8,6 +8,11 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 workalendar = "^17.0.0"
+termcolor = "^2.3.0"
+pydantic = "^2.4.2"
+reportlib = "^3.4.0"
+reportlab = "^4.0.6"
+colored = "^2.2.3"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.6.1"
